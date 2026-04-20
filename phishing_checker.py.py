@@ -1,7 +1,6 @@
 import streamlit as st
 from urllib.parse import urlparse
 
-
 def detect_phishing_with_reasons(url: str):
     keywords = ["login", "verify", "update", "bank", "secure", "account"]
     parsed = urlparse(url)
@@ -44,7 +43,7 @@ def detect_phishing_with_reasons(url: str):
         "detail": f"Contains '@': {'@' in url}"
     })
 
-    # Compute score like original function
+    # Compute score
     score = sum(0 if c["passed"] else 1 for c in checks)
     if score >= 3:
         verdict = "⚠ Phishing suspected!"
@@ -59,21 +58,17 @@ def detect_phishing_with_reasons(url: str):
     return verdict, category, checks
 
 
-st.set_page_config(page_title="Phishing URL Checker", page_icon="🛡", layout="centered")
+st.set_page_config(page_title="Smart Link Analyzer for Safer Browsing", page_icon="🛡", layout="centered")
 
-st.title("🛡 Phishing URL Checker")
-st.write("Enter a URL to check for common phishing indicators.")
+st.title("🛡 Smart Link Analyzer")
+st.write("Check URLs for phishing indicators.")
 
-with st.form("url_form", clear_on_submit=False):
-    url_input = st.text_input("URL", placeholder="https://example.com/login")
-    submitted = st.form_submit_button("Check URL")
-
-if submitted:
+url_input = st.text_input("Enter URL", placeholder="https://example.com/login")
+if st.button("Check URL"):
     if not url_input.strip():
         st.warning("Please enter a URL.")
     else:
         verdict, category, checks = detect_phishing_with_reasons(url_input.strip())
-
         if category == "phishing":
             st.error(verdict)
         elif category == "suspicious":
@@ -83,16 +78,4 @@ if submitted:
 
         st.subheader("Check details")
         for c in checks:
-            label = c["name"]
-            detail = c["detail"]
-            if c["passed"]:
-                st.markdown(f"- ✅ *{label}* — {detail}")
-            else:
-                st.markdown(f"- ⚠ *{label}* — {detail}")
-
-        with st.expander("How this works"):
-            st.write("""
-            This tool applies five simple, explainable checks to the URL:
-            1) Requires HTTPS, 2) Subdomain depth, 3) Hyphen in domain, 4) Suspicious keywords, 5) '@' symbol usage.
-            Three or more failed checks => Phishing suspected; two => Suspicious; otherwise safe.
-            """)
+            st.markdown(f"- {'✅' if c['passed'] else '⚠'} *{c['name']}* — {c['detail']}")
